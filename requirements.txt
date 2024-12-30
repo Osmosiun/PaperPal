@@ -1,0 +1,4 @@
+mlflow
+awscli
+langchain
+groq
