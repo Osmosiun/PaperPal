@@ -1,4 +1,8 @@
 mlflow
 awscli
 langchain
-groq
+boto3
+transformers
+torch
+bitsandbytes
+accelerate

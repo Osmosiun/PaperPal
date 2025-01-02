@@ -1,0 +1,3 @@
+S3 bucket gives weird errors. Try changing the name of the S3 Bucket.
+
+mlflow takes the input in dictionary format else it will truncate the input
