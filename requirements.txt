@@ -6,3 +6,4 @@ transformers
 torch
 bitsandbytes
 accelerate
+sagemaker

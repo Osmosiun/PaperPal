@@ -1,3 +1,11 @@
 S3 bucket gives weird errors. Try changing the name of the S3 Bucket.
 
 mlflow takes the input in dictionary format else it will truncate the input
+
+
+Next steps:
+
+ 1. SUmmary pipeline for a longer document
+ 2 chmnage the code so that ot can do batch processing. currenly it is doig iloc[0]
+ 2. setup rds point
+ 3. serve the model on aws
