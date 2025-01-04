@@ -9,3 +9,10 @@ Next steps:
  2 chmnage the code so that ot can do batch processing. currenly it is doig iloc[0]
  2. setup rds point
  3. serve the model on aws
+
+
+
+ mlflow server --artifacts-destination s3://mlflow-experiments-663/938096856342841282
+
+
+ runs:/938096856342841282/model
