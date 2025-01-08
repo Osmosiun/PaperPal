@@ -7,3 +7,9 @@ torch
 bitsandbytes
 accelerate
 sagemaker
+langchain-community
+pypdf
+cohere
+pymongo
+boto3
+pandas
