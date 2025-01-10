@@ -4,65 +4,90 @@ import json
 import pandas as pd 
 from GenerateEmbeddings import generate_embeddings
 
-# try:
-#     client = pymongo.MongoClient(
-#     host="mongodb://paperpal:paperpal123@localhost:27017",
-#     # port=27017,
-#     # username="paperpal",
-#     # password="paperpal123",
-#     retryWrites=False,
-#     tls=True,
-#     tlsCAFile="global-bundle.pem",
-#     tlsAllowInvalidHostnames=True,
-#     directConnection=True) #Check the path as per your destination
-#     print(client.server_info())  # This will confirm connection
-#     print("hi")
-# except Exception as e:
-#     print("Error:", e)
-
-
 class DocumentDBVectorSearch:
 
     def __init__(self):
 
-        self.client = pymongo.MongoClient(
-            host="mongodb://paperpal:paperpal123@localhost:27017",
-            retryWrites=False,
-            tls=True,
-            tlsCAFile="global-bundle.pem",
-            tlsAllowInvalidHostnames=True,
-            directConnection=True)
+        self.client = None
 
-        self.collection = self.client["mydatabase"]["embeddings"]
+        self.collection = None
 
-    def add_texts(self,texts:list):
+        self.index_created = False
+    
+    def create_index(self):
+        if not self.collection.index_information():
 
-        embeddings = generate_embeddings(texts)
+            self.collection.create_index([("embedding","vector")],
+                                         vectorOptions= {
+                                             "type": "hnsw", 
+                                             "similarity": "cosine",
+                                             "dimensions": 1024,
+                                             "m": 16,
+                                             "efConstruction": 64},
+                                             name="my_vss_index")
+        self.index_created = True
 
-        json_docs = [
-            {
-                "text":texts[i],
-                "embedding": embeddings[i].tolist()
-            }
-            for i in range(len(texts))
-        ]
+    def establish_connection(self):
 
-        self.collection.insert_many(json_docs)
+        print("Make sure you are running ssh tunnel before executing this function")
 
-        print("Documents inserted successfully.")
-     
-# db = client["mydatabase"]
-# collection = db["embeddings"]
+        try:
+            self.client = pymongo.MongoClient(
+                host="mongodb://paperpal:paperpal123@localhost:27017",
+                retryWrites=False,
+                tls=True,
+                tlsCAFile="global-bundle.pem",
+                tlsAllowInvalidHostnames=True,
+                directConnection=True)
+            
+            self.collection =self.client["mydatabase"]["embeddings"]
+        
+        except Exception as e:
+            print(e)
 
-# collection.delete_one({ 'name': "try" })
-# result = collection.find({ 'name': "try" })
+    def add_texts(self,texts:list): 
 
-# for doc in result:
-#     print(doc)
+        if not self.index_created:
+            raise ValueError("Index Not Created yet. Create the Index first")
 
-# data = {
-#     'name': "try",
-#     "by": "manav"
-# }
+        try:
 
-# collection.insert_one(data)
+            embeddings = generate_embeddings(texts)
+
+            json_docs = [
+                {
+                    "text":texts[i],
+                    "embedding": embeddings[i].tolist()
+                }
+                for i in range(len(texts))
+            ]
+
+            self.collection.insert_many(json_docs)
+
+            print("Documents inserted successfully.")
+        
+        except Exception as e:
+            raise Exception(print(e))
+    
+    def vector_search(self, prompt, num_results=3, use_hnsw=True):
+
+        if not self.index_created:
+            raise ValueError("Index Not Created yet. Create the Index first")
+
+        try:
+            prompt_embed = generate_embeddings([prompt])[0].tolist()
+            query = {"vectorSearch" : {"vector" : prompt_embed, "path": "embedding", "similarity": "cosine", "k": num_results}}
+            # if not use_hnsw:
+            # Needs to write logic for this
+            #     query["vectorSearch"]["index"] = None
+            results = self.collection.aggregate([{'$search': query}])
+            return list(results)
+        except Exception as e:
+            raise Exception(print(e))
+    
+    def delete_all_documents(self):
+        try:
+            self.collection.delete_many({})
+            print("Delete all documents successfully.")
+        except Exception as e:
+            raise Exception(print(e))
