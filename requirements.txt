@@ -13,3 +13,5 @@ cohere
 pymongo
 boto3
 pandas
+langchain_experimental
+langchain_cohere
